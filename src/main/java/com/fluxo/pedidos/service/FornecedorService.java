@@ -99,7 +99,7 @@ public class FornecedorService {
         List<ItemPedidoFornecedor> itens = pedido.getItens().stream()
                 .<ItemPedidoFornecedor>map(item -> {
                     ItemPedidoFornecedor itemFornecedor = new ItemPedidoFornecedor();
-                    itemFornecedor.setCodigoProduto(item.getProduto().getCodigo());
+                    itemFornecedor.setProdutoId(item.getProduto().getId());
                     itemFornecedor.setQuantidade(item.getQuantidade());
                     return itemFornecedor;
                 })
