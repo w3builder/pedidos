@@ -43,7 +43,7 @@ public class MockFornecedorController {
         }
         
         // Simular instabilidade (30% de chance de falha)
-        if (random.nextInt(10) < 3) {
+        if (getRandomValue(10) < 3) {
             logger.warn("Simulando falha no serviço do fornecedor");
             return ResponseEntity.status(503).build();
         }
@@ -57,5 +57,10 @@ public class MockFornecedorController {
         logger.info("Pedido confirmado com número: {}", response.getNumeroPedido());
         
         return ResponseEntity.ok(response);
+    }
+
+    // Method added to make testing easier
+    public int getRandomValue(int bound) {
+        return random.nextInt(bound);
     }
 } 

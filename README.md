@@ -1,23 +1,74 @@
-# Getting Started
+# Fluxo de Pedidos
 
-### Reference Documentation
-For further reference, please consider the following sections:
+Sistema de gerenciamento de pedidos para revendas, com integração para fornecedores, desenvolvido com Spring Boot.
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.3.9/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.3.9/maven-plugin/build-image.html)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/3.3.9/reference/data/sql.html#data.sql.jpa-and-spring-data)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/3.3.9/reference/using/devtools.html)
+## 📋 Funcionalidades
 
-### Guides
-The following guides illustrate how to use some features concretely:
+- Cadastro e gerenciamento de revendas
+- Cadastro e consulta de pedidos
+- Integração com fornecedores
+- Tratamento resiliente de falhas (Circuit Breaker e Retry)
+- Reprocessamento automático de pedidos pendentes
 
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
+## 🛠️ Tecnologias
 
-### Maven Parent overrides
+- Java 17
+- Spring Boot 3.2.3
+- Spring Data JPA
+- PostgreSQL
+- Resilience4j
+- Zipkin (tracing)
+- Lombok
+- Maven
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+## 🚀 Configuração e Execução
 
+### Pré-requisitos
+
+- Java 17+
+- Docker e Docker Compose
+- Maven 3.6+
+
+### Com Docker
+
+O projeto inclui um arquivo docker-compose.yml para facilitar a execução:
+
+```bash
+# Iniciar os serviços necessários (PostgreSQL e Zipkin)
+docker-compose up -d
+
+# Compilar o projeto
+mvn clean install
+
+# Executar a aplicação
+mvn spring-boot:run
+```
+
+## 🔍 APIs Disponíveis
+
+### API de Revendas
+
+- `GET /api/revendas` - Lista todas as revendas
+- `GET /api/revendas/{id}` - Busca revenda por ID
+- `GET /api/revendas/cnpj/{cnpj}` - Busca revenda por CNPJ
+- `POST /api/revendas` - Cria uma nova revenda
+- `PUT /api/revendas/{id}` - Atualiza uma revenda
+- `DELETE /api/revendas/{id}` - Remove uma revenda
+
+### API de Pedidos
+
+- `GET /api/revendas/{revendaId}/pedidos` - Lista pedidos da revenda
+- `GET /api/revendas/{revendaId}/pedidos/{id}` - Busca pedido por ID
+- `GET /api/revendas/{revendaId}/pedidos/numero/{numero}` - Busca pedido por número
+- `GET /api/revendas/{revendaId}/pedidos/cliente/{clienteId}` - Lista pedidos de um cliente
+- `POST /api/revendas/{revendaId}/pedidos` - Cria um novo pedido
+- `PUT /api/revendas/{revendaId}/pedidos/{id}/cancelar` - Cancela um pedido
+
+### API Mock de Fornecedor (para testes)
+
+- `POST /api/fornecedor/pedidos` - Simula envio de pedido para fornecedor
+
+## 📊 Monitoramento
+
+O projeto utiliza Zipkin para rastreamento de requisições.
+Interface Web do Zipkin disponível em: http://localhost:9411
