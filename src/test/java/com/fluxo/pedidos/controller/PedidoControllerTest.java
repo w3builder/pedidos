@@ -24,11 +24,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -40,17 +42,20 @@ import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
 import com.fluxo.pedidos.dto.response.ProdutoResponseDTO;
 import com.fluxo.pedidos.entity.StatusPedido;
 import com.fluxo.pedidos.exception.BusinessException;
+import com.fluxo.pedidos.exception.GlobalExceptionHandler;
 import com.fluxo.pedidos.exception.ResourceNotFoundException;
 import com.fluxo.pedidos.service.PedidoService;
 
-@WebMvcTest(PedidoController.class)
+@ExtendWith(MockitoExtension.class)
 class PedidoControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private PedidoService pedidoService;
+
+    @InjectMocks
+    private PedidoController pedidoController;
 
     private ObjectMapper objectMapper;
     private PedidoDTO pedidoDTO;
@@ -64,8 +69,14 @@ class PedidoControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Configura o MockMvc
+        mockMvc = MockMvcBuilders.standaloneSetup(pedidoController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+        
+        // Configura o ObjectMapper para lidar com LocalDateTime
         objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule()); // For LocalDateTime serialization
+        objectMapper.registerModule(new JavaTimeModule());
         
         // Setup test data
         pedidoDTO = createPedidoDTO();
