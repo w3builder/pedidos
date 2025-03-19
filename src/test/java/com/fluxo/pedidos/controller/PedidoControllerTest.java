@@ -69,16 +69,13 @@ class PedidoControllerTest {
 
     @BeforeEach
     void setUp() {
-        // Configura o MockMvc
         mockMvc = MockMvcBuilders.standaloneSetup(pedidoController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
         
-        // Configura o ObjectMapper para lidar com LocalDateTime
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         
-        // Setup test data
         pedidoDTO = createPedidoDTO();
         responseDTO = createPedidoResponseDTO();
         responseDTO2 = createPedidoResponseDTO2();
@@ -87,10 +84,8 @@ class PedidoControllerTest {
     @Test
     @DisplayName("Deve criar um pedido com sucesso")
     void deveCriarPedidoComSucesso() throws Exception {
-        // Arrange
         when(pedidoService.criarPedido(anyLong(), any(PedidoDTO.class))).thenReturn(responseDTO);
 
-        // Act & Assert
         mockMvc.perform(post("/api/revendas/{revendaId}/pedidos", TEST_REVENDA_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(pedidoDTO)))
@@ -100,17 +95,14 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.numero", is(TEST_NUMERO_PEDIDO)))
                 .andExpect(jsonPath("$.cliente.id", is(TEST_CLIENTE_ID.intValue())));
         
-        // Verify
         verify(pedidoService, times(1)).criarPedido(TEST_REVENDA_ID, pedidoDTO);
     }
 
     @Test
     @DisplayName("Deve retornar erro ao criar pedido com dados inválidos")
     void deveRetornarErroCriarPedidoDadosInvalidos() throws Exception {
-        // Arrange - pedidoDTO without required fields
         PedidoDTO invalidPedidoDTO = new PedidoDTO();
 
-        // Act & Assert
         mockMvc.perform(post("/api/revendas/{revendaId}/pedidos", TEST_REVENDA_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidPedidoDTO)))
@@ -120,11 +112,9 @@ class PedidoControllerTest {
     @Test
     @DisplayName("Deve retornar erro ao criar pedido com revenda inexistente")
     void deveRetornarErroCriarPedidoRevendaInexistente() throws Exception {
-        // Arrange
         when(pedidoService.criarPedido(anyLong(), any(PedidoDTO.class)))
                 .thenThrow(new ResourceNotFoundException("Revenda não encontrada com id: " + TEST_REVENDA_ID));
 
-        // Act & Assert
         mockMvc.perform(post("/api/revendas/{revendaId}/pedidos", TEST_REVENDA_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(pedidoDTO)))
@@ -134,28 +124,23 @@ class PedidoControllerTest {
     @Test
     @DisplayName("Deve buscar pedido por ID com sucesso")
     void deveBuscarPedidoPorIdComSucesso() throws Exception {
-        // Arrange
         when(pedidoService.buscarPorId(anyLong())).thenReturn(responseDTO);
 
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{revendaId}/pedidos/{id}", TEST_REVENDA_ID, TEST_PEDIDO_ID))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(TEST_PEDIDO_ID.intValue())))
                 .andExpect(jsonPath("$.numero", is(TEST_NUMERO_PEDIDO)));
         
-        // Verify
         verify(pedidoService, times(1)).buscarPorId(TEST_PEDIDO_ID);
     }
 
     @Test
     @DisplayName("Deve retornar erro ao buscar pedido com ID inexistente")
     void deveRetornarErroBuscarPedidoIdInexistente() throws Exception {
-        // Arrange
         when(pedidoService.buscarPorId(anyLong()))
                 .thenThrow(new ResourceNotFoundException("Pedido não encontrado com id: " + TEST_PEDIDO_ID));
 
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{revendaId}/pedidos/{id}", TEST_REVENDA_ID, TEST_PEDIDO_ID))
                 .andExpect(status().isNotFound());
     }
@@ -163,14 +148,11 @@ class PedidoControllerTest {
     @Test
     @DisplayName("Deve retornar erro ao buscar pedido de outra revenda")
     void deveRetornarErroBuscarPedidoOutraRevenda() throws Exception {
-        // Arrange
-        // Create a pedido that belongs to a different revenda (ID = 2)
         PedidoResponseDTO otherRevendaPedido = responseDTO;
         otherRevendaPedido.getCliente().setRevendaId(2L);
         
         when(pedidoService.buscarPorId(anyLong())).thenReturn(otherRevendaPedido);
 
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{revendaId}/pedidos/{id}", TEST_REVENDA_ID, TEST_PEDIDO_ID))
                 .andExpect(status().isForbidden());
     }
@@ -178,28 +160,23 @@ class PedidoControllerTest {
     @Test
     @DisplayName("Deve buscar pedido por número com sucesso")
     void deveBuscarPedidoPorNumeroComSucesso() throws Exception {
-        // Arrange
         when(pedidoService.buscarPorNumero(anyString())).thenReturn(responseDTO);
 
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{revendaId}/pedidos/numero/{numero}", TEST_REVENDA_ID, TEST_NUMERO_PEDIDO))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(TEST_PEDIDO_ID.intValue())))
                 .andExpect(jsonPath("$.numero", is(TEST_NUMERO_PEDIDO)));
         
-        // Verify
         verify(pedidoService, times(1)).buscarPorNumero(TEST_NUMERO_PEDIDO);
     }
 
     @Test
     @DisplayName("Deve listar todos pedidos da revenda com sucesso")
     void deveListarTodosPedidosRevendaComSucesso() throws Exception {
-        // Arrange
         List<PedidoResponseDTO> pedidos = Arrays.asList(responseDTO, responseDTO2);
         when(pedidoService.listarPorRevenda(anyLong())).thenReturn(pedidos);
 
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{revendaId}/pedidos", TEST_REVENDA_ID))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -207,18 +184,15 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$[0].id", is(TEST_PEDIDO_ID.intValue())))
                 .andExpect(jsonPath("$[1].id", is(2)));
         
-        // Verify
         verify(pedidoService, times(1)).listarPorRevenda(TEST_REVENDA_ID);
     }
 
     @Test
     @DisplayName("Deve listar pedidos do cliente com sucesso")
     void deveListarPedidosClienteComSucesso() throws Exception {
-        // Arrange
         List<PedidoResponseDTO> pedidos = Arrays.asList(responseDTO);
         when(pedidoService.listarPorCliente(anyLong())).thenReturn(pedidos);
 
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{revendaId}/pedidos/cliente/{clienteId}", 
                 TEST_REVENDA_ID, TEST_CLIENTE_ID))
                 .andExpect(status().isOk())
@@ -226,21 +200,18 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(TEST_PEDIDO_ID.intValue())));
         
-        // Verify
         verify(pedidoService, times(1)).listarPorCliente(TEST_CLIENTE_ID);
     }
 
     @Test
     @DisplayName("Deve cancelar pedido com sucesso")
     void deveCancelarPedidoComSucesso() throws Exception {
-        // Arrange
         PedidoResponseDTO canceledPedido = responseDTO;
         canceledPedido.setStatus(StatusPedido.CANCELADO);
         
         when(pedidoService.buscarPorId(anyLong())).thenReturn(responseDTO);
         when(pedidoService.cancelarPedido(anyLong())).thenReturn(canceledPedido);
 
-        // Act & Assert
         mockMvc.perform(put("/api/revendas/{revendaId}/pedidos/{id}/cancelar", 
                 TEST_REVENDA_ID, TEST_PEDIDO_ID))
                 .andExpect(status().isOk())
@@ -248,7 +219,6 @@ class PedidoControllerTest {
                 .andExpect(jsonPath("$.id", is(TEST_PEDIDO_ID.intValue())))
                 .andExpect(jsonPath("$.status", is("CANCELADO")));
         
-        // Verify
         verify(pedidoService, times(1)).buscarPorId(TEST_PEDIDO_ID);
         verify(pedidoService, times(1)).cancelarPedido(TEST_PEDIDO_ID);
     }
@@ -256,18 +226,14 @@ class PedidoControllerTest {
     @Test
     @DisplayName("Deve retornar erro ao cancelar pedido já concluído")
     void deveRetornarErroCancelarPedidoConcluido() throws Exception {
-        // Arrange
         when(pedidoService.buscarPorId(anyLong())).thenReturn(responseDTO);
         doThrow(new BusinessException("Não é possível cancelar um pedido já concluído"))
             .when(pedidoService).cancelarPedido(anyLong());
 
-        // Act & Assert
         mockMvc.perform(put("/api/revendas/{revendaId}/pedidos/{id}/cancelar", 
                 TEST_REVENDA_ID, TEST_PEDIDO_ID))
                 .andExpect(status().isBadRequest());
     }
-
-    // Helper methods for creating test objects
     
     private PedidoDTO createPedidoDTO() {
         ItemPedidoDTO itemDTO = ItemPedidoDTO.builder()

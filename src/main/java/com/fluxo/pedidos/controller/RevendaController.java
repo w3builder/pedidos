@@ -73,7 +73,6 @@ public class RevendaController {
     public ResponseEntity<RevendaResponseDTO> buscarPorCnpj(
             @Parameter(description = "CNPJ da revenda (formato numérico ou XX.XXX.XXX/XXXX-XX)", required = true) 
             @PathVariable String cnpj) {
-        // Format CNPJ if it's in numeric format
         String formattedCnpj = cnpjValidator.formatCnpj(cnpj);
         RevendaResponseDTO revenda = revendaService.buscarPorCnpj(formattedCnpj);
         return ResponseEntity.ok(revenda);

@@ -66,7 +66,6 @@ public class PedidoController {
         
         PedidoResponseDTO pedido = pedidoService.buscarPorId(id);
         
-        // Verificar se o pedido pertence à revenda
         if (!pedido.getCliente().getRevendaId().equals(revendaId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -89,7 +88,6 @@ public class PedidoController {
         
         PedidoResponseDTO pedido = pedidoService.buscarPorNumero(numero);
         
-        // Verificar se o pedido pertence à revenda
         if (!pedido.getCliente().getRevendaId().equals(revendaId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -122,7 +120,6 @@ public class PedidoController {
         
         List<PedidoResponseDTO> pedidos = pedidoService.listarPorCliente(clienteId);
         
-        // Filtrar apenas os pedidos da revenda informada
         pedidos = pedidos.stream()
                 .filter(p -> p.getCliente().getRevendaId().equals(revendaId))
                 .toList();
@@ -144,7 +141,6 @@ public class PedidoController {
             @Parameter(description = "ID do pedido", required = true) 
             @PathVariable Long id) {
         
-        // Verificar se o pedido pertence à revenda
         PedidoResponseDTO pedidoExistente = pedidoService.buscarPorId(id);
         if (!pedidoExistente.getCliente().getRevendaId().equals(revendaId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

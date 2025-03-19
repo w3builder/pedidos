@@ -68,13 +68,11 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve criar uma nova revenda com sucesso")
     public void deveRealizarPostComSucesso() throws Exception {
-        // Arrange
         RevendaDTO revendaDTO = criarRevendaDTO();
         RevendaResponseDTO responseDTO = criarRevendaResponseDTO();
         
         when(revendaService.criarRevenda(any(RevendaDTO.class))).thenReturn(responseDTO);
         
-        // Act & Assert
         mockMvc.perform(post("/api/revendas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(revendaDTO)))
@@ -91,13 +89,11 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve retornar erro ao tentar criar revenda com dados inválidos")
     public void deveRetornarErroCriarRevendaDadosInvalidos() throws Exception {
-        // Arrange
         RevendaDTO revendaDTO = criarRevendaDTO();
         
         when(revendaService.criarRevenda(any(RevendaDTO.class)))
             .thenThrow(new BusinessException("CNPJ inválido"));
         
-        // Act & Assert
         mockMvc.perform(post("/api/revendas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(revendaDTO)))
@@ -110,13 +106,11 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve buscar uma revenda por ID com sucesso")
     public void deveBuscarRevendaPorIdComSucesso() throws Exception {
-        // Arrange
         Long id = 1L;
         RevendaResponseDTO responseDTO = criarRevendaResponseDTO();
         
         when(revendaService.buscarPorId(id)).thenReturn(responseDTO);
         
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
@@ -131,13 +125,11 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve retornar erro ao buscar revenda por ID inexistente")
     public void deveRetornarErroBuscarRevendaInexistente() throws Exception {
-        // Arrange
         Long id = 999L;
         
         when(revendaService.buscarPorId(id))
             .thenThrow(new ResourceNotFoundException("Revenda não encontrada com id: " + id));
         
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/{id}", id))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Revenda não encontrada com id: " + id));
@@ -148,16 +140,13 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve buscar uma revenda por CNPJ com sucesso")
     public void deveBuscarRevendaPorCnpjComSucesso() throws Exception {
-        // Arrange
-        String cnpj = "12345678000199"; // Removing special characters for URL
+        String cnpj = "12345678000199";
         String formattedCnpj = "12.345.678/0001-99";
         RevendaResponseDTO responseDTO = criarRevendaResponseDTO();
         
-        // Mock the formatCnpj method in CNPJValidator
         when(cnpjValidator.formatCnpj(cnpj)).thenReturn(formattedCnpj);
         when(revendaService.buscarPorCnpj(formattedCnpj)).thenReturn(responseDTO);
         
-        // Act & Assert
         mockMvc.perform(get("/api/revendas/cnpj/{cnpj}", cnpj))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
@@ -170,7 +159,6 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve listar todas as revendas com sucesso")
     public void deveListarTodasRevendasComSucesso() throws Exception {
-        // Arrange
         List<RevendaResponseDTO> revendas = Arrays.asList(
                 criarRevendaResponseDTO(),
                 criarRevendaResponseDTO2()
@@ -178,7 +166,6 @@ public class RevendaControllerTest {
         
         when(revendaService.listarTodas()).thenReturn(revendas);
         
-        // Act & Assert
         mockMvc.perform(get("/api/revendas"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
@@ -192,14 +179,12 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve atualizar uma revenda com sucesso")
     public void deveAtualizarRevendaComSucesso() throws Exception {
-        // Arrange
         Long id = 1L;
         RevendaDTO revendaDTO = criarRevendaDTO();
         RevendaResponseDTO responseDTO = criarRevendaResponseDTO();
         
         when(revendaService.atualizarRevenda(eq(id), any(RevendaDTO.class))).thenReturn(responseDTO);
         
-        // Act & Assert
         mockMvc.perform(put("/api/revendas/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(revendaDTO)))
@@ -213,12 +198,10 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve deletar uma revenda com sucesso")
     public void deveDeletarRevendaComSucesso() throws Exception {
-        // Arrange
         Long id = 1L;
         
         doNothing().when(revendaService).deletarRevenda(id);
         
-        // Act & Assert
         mockMvc.perform(delete("/api/revendas/{id}", id))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
@@ -229,21 +212,15 @@ public class RevendaControllerTest {
     @Test
     @DisplayName("Deve retornar erro ao tentar deletar revenda inexistente")
     public void deveRetornarErroDeletarRevendaInexistente() throws Exception {
-        // Arrange
         Long id = 999L;
         
         doNothing().when(revendaService).deletarRevenda(id);
         
-        // Act & Assert
         mockMvc.perform(delete("/api/revendas/{id}", id))
                 .andExpect(status().isNoContent());
         
         verify(revendaService, times(1)).deletarRevenda(id);
     }
-    
-    // =========================================================================
-    // Métodos de suporte para criação de objetos de teste
-    // =========================================================================
     
     private RevendaDTO criarRevendaDTO() {
         TelefoneDTO telefoneDTO = TelefoneDTO.builder()
