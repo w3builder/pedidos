@@ -1,6 +1,7 @@
 package com.fluxo.pedidos.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +12,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.ItemPedidoFornecedor;
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.PedidoFornecedorRequest;
 import com.fluxo.pedidos.dto.request.PedidoDTO;
 import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
+import com.fluxo.pedidos.enums.StatusPedido;
 import com.fluxo.pedidos.service.PedidoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -152,5 +158,71 @@ public class PedidoController {
         
         PedidoResponseDTO pedidoCancelado = pedidoService.cancelarPedido(id);
         return ResponseEntity.ok(pedidoCancelado);
+    }
+    
+    @GetMapping("/{id}/processar-fornecedor")
+    @Operation(summary = "Processar pedido no fornecedor", 
+        description = "Envia um pedido existente para processamento no fornecedor via Camel")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pedido processado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Pedido não pode ser processado"),
+        @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
+    })
+    public ResponseEntity<?> processarPedidoFornecedor(
+            @Parameter(description = "ID da revenda", required = true) 
+            @PathVariable Long revendaId,
+            @Parameter(description = "ID do pedido", required = true) 
+            @PathVariable Long id) {
+        
+        // Verificar se o pedido existe e pertence à revenda
+        PedidoResponseDTO pedidoExistente = pedidoService.buscarPorId(id);
+        if (!pedidoExistente.getCliente().getRevendaId().equals(revendaId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Converter para o formato do fornecedor
+        PedidoFornecedorRequest request = new PedidoFornecedorRequest();
+        request.setCodigoRevenda("REV00"+revendaId); // Código fixo para testes
+        
+        // Converter itens do pedido para formato do fornecedor
+        List<ItemPedidoFornecedor> itens = pedidoExistente.getItens().stream()
+                .map(item -> {
+                    ItemPedidoFornecedor itemFornecedor = new ItemPedidoFornecedor();
+                    itemFornecedor.setCodigoProduto(item.getProduto().getCodigo());
+                    itemFornecedor.setQuantidade(item.getQuantidade());
+                    itemFornecedor.setPrecoUnitario(item.getPrecoUnitario());
+                    return itemFornecedor;
+                })
+                .collect(Collectors.toList());
+        
+        request.setItens(itens);
+        
+        // Chamar o endpoint Camel via RestTemplate
+        RestTemplate restTemplate = new RestTemplate();
+        String camelEndpoint = "http://localhost:8080/camel/mock/fornecedor/pedidos";
+        
+        try {
+            ResponseEntity<Object> camelResponse = restTemplate.postForEntity(
+                    camelEndpoint, 
+                    request, 
+                    Object.class);
+            
+            // Se tudo correr bem, atualizar o status do pedido
+            if (camelResponse.getStatusCode().is2xxSuccessful()) {
+                pedidoService.atualizarStatusPedido(id, StatusPedido.ENVIADO_FORNECEDOR);
+                return ResponseEntity.status(camelResponse.getStatusCode())
+                        .body(camelResponse.getBody());
+            } else {
+                return ResponseEntity
+                        .status(camelResponse.getStatusCode())
+                        .body(camelResponse.getBody());
+            }
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao processar pedido: " + e.getMessage());
+        }
     }
 } 

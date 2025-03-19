@@ -18,7 +18,7 @@ import com.fluxo.pedidos.entity.ItemPedido;
 import com.fluxo.pedidos.entity.Pedido;
 import com.fluxo.pedidos.entity.Produto;
 import com.fluxo.pedidos.entity.Revenda;
-import com.fluxo.pedidos.entity.StatusPedido;
+import com.fluxo.pedidos.enums.StatusPedido;
 import com.fluxo.pedidos.exception.BusinessException;
 import com.fluxo.pedidos.exception.ResourceNotFoundException;
 import com.fluxo.pedidos.mapper.PedidoMapper;
@@ -163,6 +163,17 @@ public class PedidoServiceImpl implements PedidoService {
         log.info("Pedido cancelado com sucesso. ID: {}, Número: {}", pedidoCancelado.getId(), pedidoCancelado.getNumero());
         
         return pedidoMapper.toResponseDTO(pedidoCancelado);
+    }
+    
+    @Override
+    public PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido status) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + id));
+        
+        pedido.setStatus(status);
+        Pedido pedidoAtualizado = pedidoRepository.save(pedido);
+        
+        return pedidoMapper.toResponseDTO(pedidoAtualizado);
     }
     
     /**

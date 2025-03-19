@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fluxo.pedidos.dto.request.PedidoDTO;
 import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
+import com.fluxo.pedidos.enums.StatusPedido;
 
 public interface PedidoService {
     
@@ -49,4 +50,12 @@ public interface PedidoService {
      * @return DTO de resposta com os dados do pedido cancelado
      */
     PedidoResponseDTO cancelarPedido(Long id);
+    
+    /**
+     * Atualiza o status de um pedido
+     * @param id ID do pedido
+     * @param status Novo status do pedido
+     * @return Pedido atualizado
+     */
+    PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido status);
 } 

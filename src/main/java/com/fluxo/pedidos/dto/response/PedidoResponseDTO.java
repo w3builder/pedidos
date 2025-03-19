@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fluxo.pedidos.entity.StatusPedido;
+import com.fluxo.pedidos.enums.StatusPedido;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

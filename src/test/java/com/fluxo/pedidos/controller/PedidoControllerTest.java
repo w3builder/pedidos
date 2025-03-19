@@ -40,7 +40,7 @@ import com.fluxo.pedidos.dto.response.ClienteResponseDTO;
 import com.fluxo.pedidos.dto.response.ItemPedidoResponseDTO;
 import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
 import com.fluxo.pedidos.dto.response.ProdutoResponseDTO;
-import com.fluxo.pedidos.entity.StatusPedido;
+import com.fluxo.pedidos.enums.StatusPedido;
 import com.fluxo.pedidos.exception.BusinessException;
 import com.fluxo.pedidos.exception.GlobalExceptionHandler;
 import com.fluxo.pedidos.exception.ResourceNotFoundException;
