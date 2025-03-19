@@ -14,5 +14,6 @@ import lombok.NoArgsConstructor;
 public class PedidoFornecedorResponse {
     private String numeroPedido;
     private String status;
+    private String mensagem;
     private List<ItemPedidoFornecedor> itensConfirmados;
 } 
