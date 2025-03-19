@@ -1,4 +1,4 @@
-package com.fluxo.pedidos.camel;
+package com.fluxo.pedidos.camel.mock;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.fluxo.pedidos.camel.dto.fornecedor.ItemPedidoFornecedor;
-import com.fluxo.pedidos.camel.dto.fornecedor.PedidoFornecedorRequest;
-import com.fluxo.pedidos.camel.dto.fornecedor.PedidoFornecedorResponse;
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.ItemPedidoFornecedor;
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.PedidoFornecedorRequest;
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.PedidoFornecedorResponse;
 
 @Component
 public class RotaProcessamentoPedidoMock extends RouteBuilder {

@@ -1,4 +1,4 @@
-package com.fluxo.pedidos.camel.config;
+package com.fluxo.pedidos.camel.mock.config;
 
 import org.apache.camel.component.servlet.CamelHttpTransportServlet;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;

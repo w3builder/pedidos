@@ -122,12 +122,6 @@
 			<artifactId>camel-jackson-starter</artifactId>
 			<version>4.0.0</version>
 		</dependency>
-		<!-- Adicionar dependência do OpenAPI para Camel -->
-		<dependency>
-			<groupId>org.apache.camel.springboot</groupId>
-			<artifactId>camel-openapi-java-starter</artifactId>
-			<version>4.0.0</version>
-		</dependency>
 		<!-- Adicionar suporte para Circuit Breaker com Resilience4j no Camel -->
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>

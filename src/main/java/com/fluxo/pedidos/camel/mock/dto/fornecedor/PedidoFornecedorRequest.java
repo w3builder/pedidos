@@ -1,4 +1,4 @@
-package com.fluxo.pedidos.camel.dto.fornecedor;
+package com.fluxo.pedidos.camel.mock.dto.fornecedor;
 
 import java.util.List;
 
