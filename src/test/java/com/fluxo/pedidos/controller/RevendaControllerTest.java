@@ -29,16 +29,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fluxo.pedidos.dto.request.ContatoDTO;
-import com.fluxo.pedidos.dto.request.EnderecoDTO;
-import com.fluxo.pedidos.dto.request.RevendaDTO;
-import com.fluxo.pedidos.dto.request.TelefoneDTO;
-import com.fluxo.pedidos.dto.response.RevendaResponseDTO;
-import com.fluxo.pedidos.exception.BusinessException;
-import com.fluxo.pedidos.exception.GlobalExceptionHandler;
-import com.fluxo.pedidos.exception.ResourceNotFoundException;
-import com.fluxo.pedidos.service.RevendaService;
-import com.fluxo.pedidos.util.CNPJValidator;
+import com.fluxo.pedidos.application.exception.BusinessException;
+import com.fluxo.pedidos.application.exception.ResourceNotFoundException;
+import com.fluxo.pedidos.domain.service.RevendaService;
+import com.fluxo.pedidos.presentation.dto.request.ContatoDTO;
+import com.fluxo.pedidos.presentation.dto.request.EnderecoDTO;
+import com.fluxo.pedidos.presentation.dto.request.RevendaDTO;
+import com.fluxo.pedidos.presentation.dto.request.TelefoneDTO;
+import com.fluxo.pedidos.presentation.dto.response.RevendaResponseDTO;
+import com.fluxo.pedidos.presentation.advice.GlobalExceptionHandler;
+import com.fluxo.pedidos.presentation.controller.RevendaController;
+import com.fluxo.pedidos.presentation.validator.CNPJValidator;
 
 @ExtendWith(MockitoExtension.class)
 public class RevendaControllerTest {

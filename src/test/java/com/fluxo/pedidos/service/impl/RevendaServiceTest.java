@@ -22,14 +22,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.fluxo.pedidos.dto.request.ContatoDTO;
-import com.fluxo.pedidos.dto.request.EnderecoDTO;
-import com.fluxo.pedidos.dto.request.RevendaDTO;
-import com.fluxo.pedidos.dto.request.TelefoneDTO;
-import com.fluxo.pedidos.dto.response.RevendaResponseDTO;
-import com.fluxo.pedidos.exception.BusinessException;
-import com.fluxo.pedidos.exception.ResourceNotFoundException;
-import com.fluxo.pedidos.service.RevendaService;
+import com.fluxo.pedidos.application.exception.BusinessException;
+import com.fluxo.pedidos.application.exception.ResourceNotFoundException;
+import com.fluxo.pedidos.domain.service.RevendaService;
+import com.fluxo.pedidos.presentation.dto.request.ContatoDTO;
+import com.fluxo.pedidos.presentation.dto.request.EnderecoDTO;
+import com.fluxo.pedidos.presentation.dto.request.RevendaDTO;
+import com.fluxo.pedidos.presentation.dto.request.TelefoneDTO;
+import com.fluxo.pedidos.presentation.dto.response.RevendaResponseDTO;
 
 @ExtendWith(MockitoExtension.class)
 public class RevendaServiceTest {
