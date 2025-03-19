@@ -10,6 +10,7 @@ import com.fluxo.pedidos.presentation.dto.request.ContatoDTO;
 public interface ContatoMapper {
     
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "revenda", ignore = true)
     Contato toEntity(ContatoDTO dto);
     
     ContatoDTO toDTO(Contato entity);

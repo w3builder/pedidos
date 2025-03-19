@@ -10,6 +10,7 @@ import com.fluxo.pedidos.presentation.dto.request.TelefoneDTO;
 public interface TelefoneMapper {
     
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "revenda", ignore = true)
     Telefone toEntity(TelefoneDTO dto);
     
     TelefoneDTO toDTO(Telefone entity);

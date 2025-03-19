@@ -10,6 +10,7 @@ import com.fluxo.pedidos.presentation.dto.request.EnderecoDTO;
 public interface EnderecoMapper {
     
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "revenda", ignore = true)
     Endereco toEntity(EnderecoDTO dto);
     
     EnderecoDTO toDTO(Endereco entity);
