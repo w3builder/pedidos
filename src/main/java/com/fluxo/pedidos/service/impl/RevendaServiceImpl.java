@@ -30,13 +30,11 @@ public class RevendaServiceImpl implements RevendaService {
     @Override
     @Transactional
     public RevendaResponseDTO criarRevenda(RevendaDTO revendaDTO) {
-        // Validações de negócio
+
         validarRevenda(revendaDTO);
         
-        // Converter DTO para entidade e definir relacionamentos
         Revenda revenda = revendaMapper.toEntity(revendaDTO);
         
-        // Configurar relacionamentos entre entidades
         if (revenda.getTelefones() != null) {
             revenda.getTelefones().forEach(telefone -> telefone.setRevenda(revenda));
         }
@@ -49,10 +47,8 @@ public class RevendaServiceImpl implements RevendaService {
             revenda.getEnderecos().forEach(endereco -> endereco.setRevenda(revenda));
         }
         
-        // Salvar no banco de dados
         Revenda revendaSalva = revendaRepository.save(revenda);
         
-        // Converter a entidade salva para DTO de resposta
         return revendaMapper.toResponseDTO(revendaSalva);
     }
     
@@ -88,15 +84,12 @@ public class RevendaServiceImpl implements RevendaService {
         Revenda revenda = revendaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Revenda não encontrada com id: " + id));
         
-        // Validações específicas para atualização
         if (!revenda.getCnpj().equals(revendaDTO.getCnpj())) {
             throw new BusinessException("O CNPJ não pode ser alterado");
         }
         
-        // Atualizar a entidade
         revendaMapper.updateEntity(revenda, revendaDTO);
         
-        // Reconfigurar relacionamentos
         if (revenda.getTelefones() != null) {
             revenda.getTelefones().forEach(telefone -> telefone.setRevenda(revenda));
         }
@@ -109,10 +102,8 @@ public class RevendaServiceImpl implements RevendaService {
             revenda.getEnderecos().forEach(endereco -> endereco.setRevenda(revenda));
         }
         
-        // Salvar no banco de dados
         Revenda revendaAtualizada = revendaRepository.save(revenda);
         
-        // Converter a entidade atualizada para DTO de resposta
         return revendaMapper.toResponseDTO(revendaAtualizada);
     }
     
@@ -127,22 +118,19 @@ public class RevendaServiceImpl implements RevendaService {
     }
     
     private void validarRevenda(RevendaDTO revendaDTO) {
-        // Validar CNPJ
+
         if (!cnpjValidator.isValid(revendaDTO.getCnpj())) {
             throw new BusinessException("CNPJ inválido");
         }
         
-        // Verificar se já existe uma revenda com o mesmo CNPJ
         if (revendaRepository.existsByCnpj(revendaDTO.getCnpj())) {
             throw new BusinessException("Já existe uma revenda cadastrada com este CNPJ");
         }
         
-        // Verificar se já existe uma revenda com o mesmo email
         if (revendaRepository.existsByEmail(revendaDTO.getEmail())) {
             throw new BusinessException("Já existe uma revenda cadastrada com este email");
         }
         
-        // Verificar se há pelo menos um contato principal
         boolean temContatoPrincipal = revendaDTO.getContatos().stream()
                 .anyMatch(ContatoDTO::isPrincipal);
         

@@ -53,20 +53,16 @@ public class PedidoServiceImpl implements PedidoService {
     public PedidoResponseDTO criarPedido(Long revendaId, PedidoDTO pedidoDTO) {
         log.info("Criando novo pedido para revenda ID: {}", revendaId);
         
-        // Buscar revenda
         Revenda revenda = revendaRepository.findById(revendaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Revenda não encontrada com id: " + revendaId));
         
-        // Buscar cliente
         Cliente cliente = clienteRepository.findById(pedidoDTO.getClienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com id: " + pedidoDTO.getClienteId()));
         
-        // Verificar se o cliente pertence à revenda
         if (!cliente.getRevenda().getId().equals(revendaId)) {
             throw new BusinessException("Cliente não pertence à revenda informada");
         }
         
-        // Criar o pedido
         Pedido pedido = new Pedido();
         pedido.setRevenda(revenda);
         pedido.setCliente(cliente);
@@ -76,17 +72,13 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setValorTotal(BigDecimal.ZERO);
         pedido.setItens(new ArrayList<>());
         
-        // Processar itens do pedido
         processarItensPedido(pedido, pedidoDTO.getItens(), revendaId);
         
-        // Calcular valor total do pedido
         pedido.calcularValorTotal();
         
-        // Salvar o pedido
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
         log.info("Pedido criado com sucesso. ID: {}, Número: {}", pedidoSalvo.getId(), pedidoSalvo.getNumero());
-        
-        // Converter para DTO de resposta
+
         return pedidoMapper.toResponseDTO(pedidoSalvo);
     }
     
@@ -117,7 +109,6 @@ public class PedidoServiceImpl implements PedidoService {
     public List<PedidoResponseDTO> listarPorRevenda(Long revendaId) {
         log.info("Listando pedidos para revenda ID: {}", revendaId);
         
-        // Verificar se a revenda existe
         if (!revendaRepository.existsById(revendaId)) {
             throw new ResourceNotFoundException("Revenda não encontrada com id: " + revendaId);
         }
@@ -134,7 +125,6 @@ public class PedidoServiceImpl implements PedidoService {
     public List<PedidoResponseDTO> listarPorCliente(Long clienteId) {
         log.info("Listando pedidos para cliente ID: {}", clienteId);
         
-        // Verificar se o cliente existe
         if (!clienteRepository.existsById(clienteId)) {
             throw new ResourceNotFoundException("Cliente não encontrado com id: " + clienteId);
         }
@@ -154,7 +144,6 @@ public class PedidoServiceImpl implements PedidoService {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com id: " + id));
         
-        // Verifica se o pedido pode ser cancelado
         if (pedido.getStatus() == StatusPedido.CONCLUIDO) {
             throw new BusinessException("Não é possível cancelar um pedido já concluído");
         }
@@ -194,16 +183,13 @@ public class PedidoServiceImpl implements PedidoService {
         }
         
         for (ItemPedidoDTO itemDTO : itensDTO) {
-            // Buscar produto
             Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com id: " + itemDTO.getProdutoId()));
             
-            // Verificar se o produto pertence à revenda
             if (!produto.getRevenda().getId().equals(revendaId)) {
                 throw new BusinessException("Produto não pertence à revenda informada: " + produto.getNome());
             }
             
-            // Criar item do pedido
             ItemPedido item = new ItemPedido();
             item.setPedido(pedido);
             item.setProduto(produto);
@@ -211,7 +197,6 @@ public class PedidoServiceImpl implements PedidoService {
             item.setPrecoUnitario(produto.getPreco());
             item.calcularValorTotal();
             
-            // Adicionar ao pedido
             pedido.adicionarItem(item);
         }
     }
@@ -228,7 +213,6 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public RespostaProcessamentoPedidoDTO processarPedidoFornecedor(Long pedidoId, Long revendaId) {
-        // Verificar se o pedido existe e pertence à revenda
         PedidoResponseDTO pedidoExistente = buscarPorId(pedidoId);
         if (!pedidoExistente.getCliente().getRevendaId().equals(revendaId)) {
             return new RespostaProcessamentoPedidoDTO(
@@ -237,11 +221,9 @@ public class PedidoServiceImpl implements PedidoService {
             );
         }
         
-        // Converter para o formato do fornecedor
         PedidoFornecedorRequest request = new PedidoFornecedorRequest();
         request.setCodigoRevenda("REV00"+revendaId);
         
-        // Converter itens do pedido para formato do fornecedor
         List<ItemPedidoFornecedor> itens = pedidoExistente.getItens().stream()
                 .map(item -> {
                     ItemPedidoFornecedor itemFornecedor = new ItemPedidoFornecedor();
@@ -254,10 +236,8 @@ public class PedidoServiceImpl implements PedidoService {
         
         request.setItens(itens);
         
-        // Chamar o serviço do fornecedor através do client
         RespostaProcessamentoPedidoDTO resposta = fornecedorClient.enviarPedidoFornecedor(request);
         
-        // Se tudo correr bem, atualizar o status do pedido
         if (resposta.getStatus().is2xxSuccessful()) {
             atualizarStatusPedido(pedidoId, StatusPedido.ENVIADO_FORNECEDOR);
         }

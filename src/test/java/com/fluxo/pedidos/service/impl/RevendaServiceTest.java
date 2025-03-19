@@ -45,7 +45,6 @@ public class RevendaServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Setup test data
         revendaDTO = createRevendaDTO();
         responseDTO = createRevendaResponseDTO();
     }
@@ -53,177 +52,140 @@ public class RevendaServiceTest {
     @Test
     @DisplayName("Deve criar uma revenda com sucesso")
     void deveCriarRevendaComSucesso() {
-        // Arrange
         when(revendaService.criarRevenda(any(RevendaDTO.class))).thenReturn(responseDTO);
 
-        // Act
         RevendaResponseDTO result = revendaService.criarRevenda(revendaDTO);
 
-        // Assert
         assertNotNull(result);
         assertEquals(TEST_ID, result.getId());
         assertEquals(TEST_CNPJ, result.getCnpj());
         
-        // Verify
         verify(revendaService, times(1)).criarRevenda(revendaDTO);
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao criar revenda com CNPJ inválido")
     void deveLancarExcecaoCriarRevendaCnpjInvalido() {
-        // Arrange
         when(revendaService.criarRevenda(any(RevendaDTO.class)))
             .thenThrow(new BusinessException("CNPJ inválido"));
 
-        // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, 
                 () -> revendaService.criarRevenda(revendaDTO));
         
         assertEquals("CNPJ inválido", exception.getMessage());
         
-        // Verify
         verify(revendaService, times(1)).criarRevenda(revendaDTO);
     }
 
     @Test
     @DisplayName("Deve buscar revenda por ID com sucesso")
     void deveBuscarRevendaPorIdComSucesso() {
-        // Arrange
         when(revendaService.buscarPorId(anyLong())).thenReturn(responseDTO);
 
-        // Act
         RevendaResponseDTO result = revendaService.buscarPorId(TEST_ID);
 
-        // Assert
         assertNotNull(result);
         assertEquals(TEST_ID, result.getId());
         assertEquals(TEST_CNPJ, result.getCnpj());
         
-        // Verify
         verify(revendaService, times(1)).buscarPorId(TEST_ID);
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao buscar revenda com ID inexistente")
     void deveLancarExcecaoBuscarRevendaIdInexistente() {
-        // Arrange
         when(revendaService.buscarPorId(anyLong()))
             .thenThrow(new ResourceNotFoundException("Revenda não encontrada com id: " + TEST_ID));
 
-        // Act & Assert
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, 
                 () -> revendaService.buscarPorId(TEST_ID));
         
         assertEquals("Revenda não encontrada com id: " + TEST_ID, exception.getMessage());
         
-        // Verify
         verify(revendaService, times(1)).buscarPorId(TEST_ID);
     }
 
     @Test
     @DisplayName("Deve buscar revenda por CNPJ com sucesso")
     void deveBuscarRevendaPorCnpjComSucesso() {
-        // Arrange
         when(revendaService.buscarPorCnpj(anyString())).thenReturn(responseDTO);
 
-        // Act
         RevendaResponseDTO result = revendaService.buscarPorCnpj(TEST_CNPJ);
 
-        // Assert
         assertNotNull(result);
         assertEquals(TEST_ID, result.getId());
         assertEquals(TEST_CNPJ, result.getCnpj());
         
-        // Verify
         verify(revendaService, times(1)).buscarPorCnpj(TEST_CNPJ);
     }
 
     @Test
     @DisplayName("Deve listar todas as revendas com sucesso")
     void deveListarTodasRevendasComSucesso() {
-        // Arrange
         RevendaResponseDTO responseDTO2 = createRevendaResponseDTO2();
         when(revendaService.listarTodas()).thenReturn(Arrays.asList(responseDTO, responseDTO2));
 
-        // Act
         List<RevendaResponseDTO> result = revendaService.listarTodas();
 
-        // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(TEST_ID, result.get(0).getId());
         assertEquals(2L, result.get(1).getId());
         
-        // Verify
         verify(revendaService, times(1)).listarTodas();
     }
 
     @Test
     @DisplayName("Deve atualizar revenda com sucesso")
     void deveAtualizarRevendaComSucesso() {
-        // Arrange
         when(revendaService.atualizarRevenda(anyLong(), any(RevendaDTO.class))).thenReturn(responseDTO);
 
-        // Act
         RevendaResponseDTO result = revendaService.atualizarRevenda(TEST_ID, revendaDTO);
 
-        // Assert
         assertNotNull(result);
         assertEquals(TEST_ID, result.getId());
         assertEquals(TEST_CNPJ, result.getCnpj());
         
-        // Verify
         verify(revendaService, times(1)).atualizarRevenda(TEST_ID, revendaDTO);
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao atualizar revenda com ID inexistente")
     void deveLancarExcecaoAtualizarRevendaIdInexistente() {
-        // Arrange
         when(revendaService.atualizarRevenda(anyLong(), any(RevendaDTO.class)))
             .thenThrow(new ResourceNotFoundException("Revenda não encontrada com id: " + TEST_ID));
 
-        // Act & Assert
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, 
                 () -> revendaService.atualizarRevenda(TEST_ID, revendaDTO));
         
         assertEquals("Revenda não encontrada com id: " + TEST_ID, exception.getMessage());
         
-        // Verify
         verify(revendaService, times(1)).atualizarRevenda(TEST_ID, revendaDTO);
     }
 
     @Test
     @DisplayName("Deve excluir revenda com sucesso")
     void deveExcluirRevendaComSucesso() {
-        // Arrange
         doNothing().when(revendaService).deletarRevenda(anyLong());
 
-        // Act
         revendaService.deletarRevenda(TEST_ID);
         
-        // Verify
         verify(revendaService, times(1)).deletarRevenda(TEST_ID);
     }
 
     @Test
     @DisplayName("Deve lançar exceção ao excluir revenda com ID inexistente")
     void deveLancarExcecaoExcluirRevendaIdInexistente() {
-        // Arrange
         doThrow(new ResourceNotFoundException("Revenda não encontrada com id: " + TEST_ID))
             .when(revendaService).deletarRevenda(anyLong());
 
-        // Act & Assert
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, 
                 () -> revendaService.deletarRevenda(TEST_ID));
         
         assertEquals("Revenda não encontrada com id: " + TEST_ID, exception.getMessage());
         
-        // Verify
         verify(revendaService, times(1)).deletarRevenda(TEST_ID);
     }
-
-    // Helper methods for creating test objects
     
     private RevendaDTO createRevendaDTO() {
         TelefoneDTO telefoneDTO = TelefoneDTO.builder()
