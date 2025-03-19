@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.fluxo.pedidos.dto.request.PedidoDTO;
 import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
+import com.fluxo.pedidos.dto.response.RespostaProcessamentoPedidoDTO;
 import com.fluxo.pedidos.service.PedidoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -152,5 +152,23 @@ public class PedidoController {
         
         PedidoResponseDTO pedidoCancelado = pedidoService.cancelarPedido(id);
         return ResponseEntity.ok(pedidoCancelado);
+    }
+    
+    @GetMapping("/{id}/enviar-fornecedor")
+    @Operation(summary = "Enviar pedido para o fornecedor", 
+        description = "Envia um pedido existente para processamento no fornecedor via Camel")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pedido processado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Pedido não pode ser processado"),
+        @ApiResponse(responseCode = "404", description = "Pedido não encontrado")
+    })
+    public ResponseEntity<?> processarPedidoFornecedor(
+            @Parameter(description = "ID da revenda", required = true) 
+            @PathVariable Long revendaId,
+            @Parameter(description = "ID do pedido", required = true) 
+            @PathVariable Long id) {
+        
+        RespostaProcessamentoPedidoDTO resposta = pedidoService.processarPedidoFornecedor(id, revendaId);
+        return ResponseEntity.status(resposta.getStatus()).body(resposta.getResposta());
     }
 } 

@@ -25,10 +25,27 @@ services:
     networks:
       - revenda-network
     restart: unless-stopped
+    
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: revenda-rabbitmq
+    ports:
+      - "5672:5672"   # Porta padrão AMQP
+      - "15672:15672" # Porta da interface administrativa
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    restart: unless-stopped
+    networks:
+      - revenda-network
 
 volumes:
   postgres-data:
     name: revenda-postgres-data
+  rabbitmq-data:
+    name: revenda-rabbitmq-data
 
 networks:
   revenda-network:

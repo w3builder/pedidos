@@ -7,18 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.ItemPedidoFornecedor;
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.PedidoFornecedorRequest;
 import com.fluxo.pedidos.dto.request.ItemPedidoDTO;
 import com.fluxo.pedidos.dto.request.PedidoDTO;
 import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
+import com.fluxo.pedidos.dto.response.RespostaProcessamentoPedidoDTO;
 import com.fluxo.pedidos.entity.Cliente;
 import com.fluxo.pedidos.entity.ItemPedido;
 import com.fluxo.pedidos.entity.Pedido;
 import com.fluxo.pedidos.entity.Produto;
 import com.fluxo.pedidos.entity.Revenda;
-import com.fluxo.pedidos.entity.StatusPedido;
+import com.fluxo.pedidos.enums.StatusPedido;
 import com.fluxo.pedidos.exception.BusinessException;
 import com.fluxo.pedidos.exception.ResourceNotFoundException;
 import com.fluxo.pedidos.mapper.PedidoMapper;
@@ -27,6 +31,7 @@ import com.fluxo.pedidos.repository.PedidoRepository;
 import com.fluxo.pedidos.repository.ProdutoRepository;
 import com.fluxo.pedidos.repository.RevendaRepository;
 import com.fluxo.pedidos.service.PedidoService;
+import com.fluxo.pedidos.clients.FornecedorClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +46,7 @@ public class PedidoServiceImpl implements PedidoService {
     private final ProdutoRepository produtoRepository;
     private final RevendaRepository revendaRepository;
     private final PedidoMapper pedidoMapper;
+    private final FornecedorClient fornecedorClient;
     
     @Override
     @Transactional
@@ -165,6 +171,17 @@ public class PedidoServiceImpl implements PedidoService {
         return pedidoMapper.toResponseDTO(pedidoCancelado);
     }
     
+    @Override
+    public PedidoResponseDTO atualizarStatusPedido(Long id, StatusPedido status) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + id));
+        
+        pedido.setStatus(status);
+        Pedido pedidoAtualizado = pedidoRepository.save(pedido);
+        
+        return pedidoMapper.toResponseDTO(pedidoAtualizado);
+    }
+    
     /**
      * Processa os itens do pedido
      * @param pedido Pedido para adicionar os itens
@@ -207,5 +224,44 @@ public class PedidoServiceImpl implements PedidoService {
         LocalDateTime agora = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
         return "PED" + agora.format(formatter);
+    }
+
+    @Override
+    public RespostaProcessamentoPedidoDTO processarPedidoFornecedor(Long pedidoId, Long revendaId) {
+        // Verificar se o pedido existe e pertence à revenda
+        PedidoResponseDTO pedidoExistente = buscarPorId(pedidoId);
+        if (!pedidoExistente.getCliente().getRevendaId().equals(revendaId)) {
+            return new RespostaProcessamentoPedidoDTO(
+                "Pedido não pertence à revenda informada", 
+                HttpStatus.FORBIDDEN
+            );
+        }
+        
+        // Converter para o formato do fornecedor
+        PedidoFornecedorRequest request = new PedidoFornecedorRequest();
+        request.setCodigoRevenda("REV00"+revendaId);
+        
+        // Converter itens do pedido para formato do fornecedor
+        List<ItemPedidoFornecedor> itens = pedidoExistente.getItens().stream()
+                .map(item -> {
+                    ItemPedidoFornecedor itemFornecedor = new ItemPedidoFornecedor();
+                    itemFornecedor.setCodigoProduto(item.getProduto().getCodigo());
+                    itemFornecedor.setQuantidade(item.getQuantidade());
+                    itemFornecedor.setPrecoUnitario(item.getPrecoUnitario());
+                    return itemFornecedor;
+                })
+                .collect(Collectors.toList());
+        
+        request.setItens(itens);
+        
+        // Chamar o serviço do fornecedor através do client
+        RespostaProcessamentoPedidoDTO resposta = fornecedorClient.enviarPedidoFornecedor(request);
+        
+        // Se tudo correr bem, atualizar o status do pedido
+        if (resposta.getStatus().is2xxSuccessful()) {
+            atualizarStatusPedido(pedidoId, StatusPedido.ENVIADO_FORNECEDOR);
+        }
+        
+        return resposta;
     }
 } 
