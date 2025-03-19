@@ -34,17 +34,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fluxo.pedidos.dto.request.ItemPedidoDTO;
-import com.fluxo.pedidos.dto.request.PedidoDTO;
-import com.fluxo.pedidos.dto.response.ClienteResponseDTO;
-import com.fluxo.pedidos.dto.response.ItemPedidoResponseDTO;
-import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
-import com.fluxo.pedidos.dto.response.ProdutoResponseDTO;
-import com.fluxo.pedidos.enums.StatusPedido;
-import com.fluxo.pedidos.exception.BusinessException;
-import com.fluxo.pedidos.exception.GlobalExceptionHandler;
-import com.fluxo.pedidos.exception.ResourceNotFoundException;
-import com.fluxo.pedidos.service.PedidoService;
+import com.fluxo.pedidos.application.exception.BusinessException;
+import com.fluxo.pedidos.application.exception.ResourceNotFoundException;
+import com.fluxo.pedidos.domain.enums.StatusPedido;
+import com.fluxo.pedidos.domain.service.PedidoService;
+import com.fluxo.pedidos.presentation.dto.request.ItemPedidoDTO;
+import com.fluxo.pedidos.presentation.dto.request.PedidoDTO;
+import com.fluxo.pedidos.presentation.dto.response.ClienteResponseDTO;
+import com.fluxo.pedidos.presentation.dto.response.ItemPedidoResponseDTO;
+import com.fluxo.pedidos.presentation.dto.response.PedidoResponseDTO;
+import com.fluxo.pedidos.presentation.dto.response.ProdutoResponseDTO;
+import com.fluxo.pedidos.presentation.advice.GlobalExceptionHandler;
+import com.fluxo.pedidos.presentation.controller.PedidoController;
 
 @ExtendWith(MockitoExtension.class)
 class PedidoControllerTest {

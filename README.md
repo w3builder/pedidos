@@ -18,6 +18,7 @@ Sistema de gerenciamento de pedidos para revendas, com integração para fornece
 - PostgreSQL
 - Resilience4j
 - Zipkin (tracing)
+- RabbitMQ
 - Lombok
 - Maven
 
