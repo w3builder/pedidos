@@ -7,12 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.ItemPedidoFornecedor;
+import com.fluxo.pedidos.camel.mock.dto.fornecedor.PedidoFornecedorRequest;
 import com.fluxo.pedidos.dto.request.ItemPedidoDTO;
 import com.fluxo.pedidos.dto.request.PedidoDTO;
 import com.fluxo.pedidos.dto.response.PedidoResponseDTO;
+import com.fluxo.pedidos.dto.response.RespostaProcessamentoPedidoDTO;
 import com.fluxo.pedidos.entity.Cliente;
 import com.fluxo.pedidos.entity.ItemPedido;
 import com.fluxo.pedidos.entity.Pedido;
@@ -27,10 +31,11 @@ import com.fluxo.pedidos.repository.PedidoRepository;
 import com.fluxo.pedidos.repository.ProdutoRepository;
 import com.fluxo.pedidos.repository.RevendaRepository;
 import com.fluxo.pedidos.service.PedidoService;
+import com.fluxo.pedidos.clients.FornecedorClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
+import org.springframework.beans.factory.annotation.Value;
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -41,6 +46,7 @@ public class PedidoServiceImpl implements PedidoService {
     private final ProdutoRepository produtoRepository;
     private final RevendaRepository revendaRepository;
     private final PedidoMapper pedidoMapper;
+    private final FornecedorClient fornecedorClient;
     
     @Override
     @Transactional
@@ -218,5 +224,44 @@ public class PedidoServiceImpl implements PedidoService {
         LocalDateTime agora = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
         return "PED" + agora.format(formatter);
+    }
+
+    @Override
+    public RespostaProcessamentoPedidoDTO processarPedidoFornecedor(Long pedidoId, Long revendaId) {
+        // Verificar se o pedido existe e pertence à revenda
+        PedidoResponseDTO pedidoExistente = buscarPorId(pedidoId);
+        if (!pedidoExistente.getCliente().getRevendaId().equals(revendaId)) {
+            return new RespostaProcessamentoPedidoDTO(
+                "Pedido não pertence à revenda informada", 
+                HttpStatus.FORBIDDEN
+            );
+        }
+        
+        // Converter para o formato do fornecedor
+        PedidoFornecedorRequest request = new PedidoFornecedorRequest();
+        request.setCodigoRevenda("REV00"+revendaId);
+        
+        // Converter itens do pedido para formato do fornecedor
+        List<ItemPedidoFornecedor> itens = pedidoExistente.getItens().stream()
+                .map(item -> {
+                    ItemPedidoFornecedor itemFornecedor = new ItemPedidoFornecedor();
+                    itemFornecedor.setCodigoProduto(item.getProduto().getCodigo());
+                    itemFornecedor.setQuantidade(item.getQuantidade());
+                    itemFornecedor.setPrecoUnitario(item.getPrecoUnitario());
+                    return itemFornecedor;
+                })
+                .collect(Collectors.toList());
+        
+        request.setItens(itens);
+        
+        // Chamar o serviço do fornecedor através do client
+        RespostaProcessamentoPedidoDTO resposta = fornecedorClient.enviarPedidoFornecedor(request);
+        
+        // Se tudo correr bem, atualizar o status do pedido
+        if (resposta.getStatus().is2xxSuccessful()) {
+            atualizarStatusPedido(pedidoId, StatusPedido.ENVIADO_FORNECEDOR);
+        }
+        
+        return resposta;
     }
 } 
